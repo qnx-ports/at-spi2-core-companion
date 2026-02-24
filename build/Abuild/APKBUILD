@@ -1,0 +1,54 @@
+pkgname=at-spi2-core
+pkgver=2.58.0
+pkgrel=1
+# NOTE: Upgrade only to even-numbered versions (e.g. 1.18.x, 1.20.x)!
+pkgdesc="Protocol definitions and daemon for D-Bus at-spi"
+url="https://www.freedesktop.org/wiki/Accessibility/AT-SPI2/"
+arch="all"
+options="!check"  # Requires running dbus daemon.
+license="LGPL-2.1-or-later"
+depends="
+    dbus
+    glib
+    "
+depends_dev="
+    libxml2
+    dbus-dev
+    glib-dev
+    libxml2-dev
+    "
+makedepends="
+    $depends_dev
+    meson
+    pkgconf-dev
+    gobject-introspection-dev
+    "
+subpackages="
+    $pkgname-dev
+    $pkgname-libs
+    "
+
+source="https://download.gnome.org/sources/at-spi2-core/${pkgver%.*}/at-spi2-core-$pkgver.tar.xz"
+builddir=$srcdir/at-spi2-core-$pkgver
+
+build() {
+    abuild-meson \
+        -Db_lto=false \
+        -Dx11=disabled \
+        -Dintrospection=enabled \
+        -Ddocs=false \
+        --prefix=/usr \
+        -Ddbus_daemon=/usr/bin/dbus-daemon \
+        . build
+    meson compile -C build
+}
+
+package() {
+    DESTDIR="$pkgdir" meson install --no-rebuild -C build
+    rm -rf "$pkgdir"/usr/lib/systemd
+}
+
+
+sha512sums="
+bbcc82e324d6d0d26962804c500afc72d05554399b51a631d1253b35ba5bd456573cfaa0659f253fc0cfc4d0395b97bc4ba2d91c909051be8be4fd61b7ec0e47  at-spi2-core-2.58.0.tar.xz
+"
